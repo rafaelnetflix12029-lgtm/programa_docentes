@@ -9,6 +9,10 @@
 // @supabase/supabase-js v2 cargado por CDN antes que este archivo.
 // =====================================================================
 
+// Todo el módulo va dentro de una IIFE para no filtrar nombres (Auth,
+// Catalogo, etc.) al ámbito global y evitar choques con app.js.
+(() => {
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Lanza un Error legible a partir de la respuesta de Supabase.
@@ -300,3 +304,5 @@ const Seguimiento = {
 
 // Exponer en window para que index.html lo use.
 window.DB = { Auth, Catalogo, Asignaciones, Alumnos, Seguimiento };
+
+})();
