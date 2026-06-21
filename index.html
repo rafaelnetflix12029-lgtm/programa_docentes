@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seguimiento Académico — Profesores</title>
+  <style>
+    :root {
+      --azul: #1d4ed8; --azul-osc: #1e3a8a; --gris: #f3f4f6; --gris-borde: #d1d5db;
+      --txt: #1f2937; --txt-suave: #6b7280; --verde: #16a34a; --rojo: #dc2626;
+      --inicio: #ef4444; --proceso: #f59e0b; --logrado: #22c55e; --destacado: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--txt); background: #fafafa; }
+    header { background: var(--azul-osc); color: #fff; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+    header .user { font-size: 13px; opacity: .9; }
+    main { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    button { cursor: pointer; font-size: 14px; border-radius: 6px; border: 1px solid var(--azul);
+      background: var(--azul); color: #fff; padding: 8px 14px; }
+    button.sec { background: #fff; color: var(--azul); }
+    button.danger { background: #fff; color: var(--rojo); border-color: var(--rojo); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    input, select, textarea { font-size: 14px; padding: 8px; border: 1px solid var(--gris-borde);
+      border-radius: 6px; font-family: inherit; width: 100%; }
+    label { font-size: 13px; color: var(--txt-suave); display: block; margin-bottom: 4px; }
+    .field { margin-bottom: 12px; }
+    .card { background: #fff; border: 1px solid var(--gris-borde); border-radius: 10px;
+      padding: 18px; margin-bottom: 16px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 140px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--gris); }
+    th { color: var(--txt-suave); font-weight: 600; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tabs button { background: #fff; color: var(--txt); border-color: var(--gris-borde); }
+    .tabs button.activo { background: var(--azul); color: #fff; border-color: var(--azul); }
+    .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px;
+      color: #fff; font-weight: 600; }
+    .pill.inicio { background: var(--inicio); } .pill.proceso { background: var(--proceso); }
+    .pill.logrado { background: var(--logrado); } .pill.destacado { background: var(--destacado); }
+    .pill.vacio { background: #9ca3af; }
+    .msg { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 14px; }
+    .msg.error { background: #fef2f2; color: var(--rojo); border: 1px solid #fecaca; }
+    .msg.ok { background: #f0fdf4; color: var(--verde); border: 1px solid #bbf7d0; }
+    .muted { color: var(--txt-suave); font-size: 13px; }
+    .center { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+    .auth-box { width: 360px; max-width: 92vw; }
+    h2 { font-size: 18px; margin: 0 0 14px; }
+    h3 { font-size: 15px; margin: 18px 0 8px; }
+    .hidden { display: none !important; }
+    .leyenda { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; font-size: 12px; }
+    @media print {
+      header, .tabs, .no-print, button { display: none !important; }
+      body { background: #fff; } .card { border: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ============ PANTALLA DE LOGIN / REGISTRO ============ -->
+  <div id="vista-auth" class="center">
+    <div class="card auth-box">
+      <h2 id="auth-titulo">Iniciar sesión</h2>
+      <div id="auth-msg"></div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input id="auth-email" type="email" autocomplete="email" placeholder="profesor@correo.com" />
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="auth-pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      </div>
+      <button id="btn-auth" style="width:100%">Entrar</button>
+      <p class="muted" style="text-align:center; margin-top:12px">
+        <span id="auth-cambiar-txt">¿No tienes cuenta?</span>
+        <a href="#" id="auth-cambiar">Crear cuenta</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ APLICACIÓN ============ -->
+  <div id="vista-app" class="hidden">
+    <header>
+      <h1>📚 Seguimiento Académico</h1>
+      <div>
+        <span class="user" id="lbl-user"></span>
+        <button class="sec" id="btn-salir" style="margin-left:10px">Salir</button>
+      </div>
+    </header>
+    <main>
+      <div class="tabs">
+        <button data-tab="asignaciones" class="activo">Mis cursos</button>
+        <button data-tab="alumnos">Alumnos</button>
+        <button data-tab="seguimiento">Seguimiento</button>
+        <button data-tab="dashboard">Reporte</button>
+      </div>
+      <div id="app-msg"></div>
+
+      <!-- TAB: Asignaciones / Onboarding -->
+      <section id="tab-asignaciones">
+        <div class="card">
+          <h2>Configurar un curso que enseño</h2>
+          <p class="muted">Selecciona nivel, grado, curso, subcurso y sección. Cada combinación crea una asignación.</p>
+          <div class="row">
+            <div class="field"><label>Nivel</label><select id="sel-nivel"></select></div>
+            <div class="field"><label>Grado</label><select id="sel-grado"></select></div>
+            <div class="field"><label>Curso</label><select id="sel-curso"></select></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Subcurso</label><select id="sel-subcurso"></select></div>
+            <div class="field"><label>Sección</label><input id="inp-seccion" placeholder="A, B, Única…" value="Única" /></div>
+            <div class="field"><label>Año escolar</label><input id="inp-anio" type="number" /></div>
+          </div>
+          <div class="row no-print">
+            <button id="btn-crear-asig">Agregar curso</button>
+            <button class="sec" id="btn-nuevo-subcurso">+ Crear subcurso propio</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Mis cursos asignados</h2>
+          <table>
+            <thead><tr><th>Nivel</th><th>Grado</th><th>Curso / Subcurso</th><th>Sección</th><th>Año</th><th></th></tr></thead>
+            <tbody id="tbody-asig"><tr><td colspan="6" class="muted">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB: Alumnos -->
+      <section id="tab-alumnos" class="hidden">
+        <div class="card">
+          <h2>Alumnos por curso</h2>
+          <div class="field"><label>Selecciona un curso</label><select id="sel-asig-alumnos"></select></div>
+          <div class="row">
+            <div class="field"><label>Agregar alumno (nombre)</label><input id="inp-alumno-nombre" placeholder="Apellidos, Nombres" /></div>
+            <div class="field" style="max-width:160px"><label>Código (opcional)</label><input id="inp-alumno-codigo" /></div>
+            <div style="flex:0 0 auto; display:flex; align-items:flex-end"><button id="btn-add-alumno">Agregar</button></div>
+          </div>
+          <details>
+            <summary class="muted" style="cursor:pointer">Carga masiva (pegar lista de nombres)</summary>
+            <div style="margin-top:10px">
+              <textarea id="inp-masivo" rows="6" placeholder="Un nombre por línea…"></textarea>
+              <button id="btn-masivo" style="margin-top:8px">Cargar lista</button>
+            </div>
+          </details>
+        </div>
+        <div class="card">
+          <h3 id="ttl-alumnos">Lista de alumnos</h3>
+          <table>
+            <thead><tr><th>#</th><th>Nombre</th><th>Código</th><th></th></tr></thead>
+            <tbody id="tbody-alumnos"><tr><td colspan="4" class="muted">Selecciona un curso.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB: Seguimiento -->
+      <section id="tab-seguimiento" class="hidden">
+        <div class="card no-print">
+          <h2>Registro de seguimiento por competencia</h2>
+          <div class="field"><label>Curso</label><select id="sel-asig-seg"></select></div>
+          <p class="muted">Registra el nivel de logro (escala EBR) de cada alumno en cada competencia del subcurso y grado.</p>
+        </div>
+        <div id="seg-contenedor"></div>
+      </section>
+
+      <!-- TAB: Dashboard / Reporte -->
+      <section id="tab-dashboard" class="hidden">
+        <div class="card no-print">
+          <h2>Reporte de seguimiento</h2>
+          <div class="row">
+            <div class="field"><label>Curso</label><select id="sel-asig-dash"></select></div>
+            <div class="field"><label>Vista</label>
+              <select id="sel-vista-dash">
+                <option value="seccion">Por sección (todos los alumnos)</option>
+                <option value="alumno">Por alumno</option>
+              </select>
+            </div>
+            <div class="field" id="wrap-sel-alumno"><label>Alumno</label><select id="sel-alumno-dash"></select></div>
+          </div>
+          <div class="row">
+            <button class="sec" onclick="window.print()">🖨️ Exportar / Imprimir PDF</button>
+            <button class="sec" id="btn-word">⬇️ Descargar Word</button>
+          </div>
+          <div class="leyenda">
+            <span class="pill inicio">En inicio</span>
+            <span class="pill proceso">En proceso</span>
+            <span class="pill logrado">Logrado</span>
+            <span class="pill destacado">Destacado</span>
+            <span class="pill vacio">Sin registrar</span>
+          </div>
+        </div>
+        <div id="dash-contenedor" class="card"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- SDK Supabase + capa de datos + lógica de UI -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
